@@ -1,1 +1,1 @@
-tanginamo jepoyt dizon
+tanginamo jepoy dizon
