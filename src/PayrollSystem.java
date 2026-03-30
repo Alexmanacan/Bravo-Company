@@ -23,46 +23,58 @@ public class PayrollSystem {
     }
 
     public void run() {
-        // Set terminal to raw mode to capture single keypresses
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         try {
-            setRawMode(true);
+            if (!isWindows) setRawMode(true);
             
+            java.util.Scanner scanner = new java.util.Scanner(System.in);
             while (running) {
                 render();
-                handleInput();
+                if (isWindows) {
+                    TUITheme.moveTo(1, 30);
+                    System.out.print(TUITheme.FG_ACCENT + " (Win) Command: " + TUITheme.RESET);
+                    String input = scanner.nextLine().toLowerCase();
+                    if (!input.isEmpty()) handleWindowsInput(input);
+                } else {
+                    handleInput();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // Restore terminal to cooked mode
-            try {
-                setRawMode(false);
-            } catch (Exception e) {
-                // Ignore
+            if (!isWindows) {
+                try { setRawMode(false); } catch (Exception e) {}
             }
             System.out.print(TUITheme.CLEAR);
             System.out.println("Payroll System closed.");
         }
     }
 
+    private void handleWindowsInput(String input) {
+        for (char ch : input.toCharArray()) {
+            switch (ch) {
+                case 'w': moveSelection(-1); break;
+                case 's': moveSelection(1);  break;
+                case 't': focusedPanel = (focusedPanel + 1) % 4; break;
+                case 'q': running = false; return;
+            }
+        }
+    }
+
     private void render() {
         System.out.print(TUITheme.CLEAR + TUITheme.BG_BASE);
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
-        // Update focused panel in TUILayout (if we're using it as state)
-        // For simplicity, let's just draw panels here since TUILayout is static
-        
-        // Grid dimensions from TUILayout
+        // ... (rest of render method logic)
         int termW = 120, termH = 30;
         int leftW = 38, rightW = termW - leftW;
         int topH = 16, botH = termH - topH - 1;
 
-        // Draw panels
         TUITheme.drawPanel(1,        1,       leftW,  topH,  "Employees",     focusedPanel == 0);
         TUITheme.drawPanel(1,        topH,   leftW,  botH,  "Summary",       focusedPanel == 1);
         TUITheme.drawPanel(leftW,   1,       rightW, topH,  "Timekeeping",   focusedPanel == 2);
         TUITheme.drawPanel(leftW,   topH,   rightW, botH,  "Payslip",       focusedPanel == 3);
 
-        // Draw Employees list
         if (employees.isEmpty()) {
             TUITheme.moveTo(3, 3);
             System.out.print(TUITheme.FG_MUTED + "No employees found." + TUITheme.RESET);
@@ -73,7 +85,6 @@ public class PayrollSystem {
             }
         }
 
-        // Draw Summary (Placeholder)
         if (focusedPanel == 0 && !employees.isEmpty()) {
             Employee e = employees.get(selectedEmployeeIndex);
             TUITheme.moveTo(3, topH + 1);
@@ -90,14 +101,11 @@ public class PayrollSystem {
             }
         }
 
-        // Status bar
-        TUITheme.drawStatusBar(termH, termW, new String[]{
-            "[↑↓] navigate", "[Tab] switch panel",
-            "[Enter] select", "[n] new employee",
-            "[q] quit"
-        });
+        String[] bindings = isWindows ? 
+            new String[]{"[w/s] move", "[t] panel", "[q] quit"} :
+            new String[]{"[↑↓] navigate", "[Tab] switch panel", "[q] quit"};
 
-        // Move cursor to bottom
+        TUITheme.drawStatusBar(termH, termW, bindings);
         TUITheme.moveTo(1, termH);
         System.out.flush();
     }

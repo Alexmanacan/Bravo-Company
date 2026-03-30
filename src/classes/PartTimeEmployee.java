@@ -12,7 +12,12 @@ public class PartTimeEmployee extends Employee {
     public void setHourlyRate(double hourlyRate) { this.hourlyRate = hourlyRate; }
 
     @Override
+    public double getRate() {
+        return hourlyRate;
+    }
+
+    @Override
     public String toString() {
-        return super.toString() + String.format(" - $%.2f/hr", hourlyRate);
+        return super.toString() + String.format(" | Rate: $%.2f/hr", hourlyRate);
     }
 }

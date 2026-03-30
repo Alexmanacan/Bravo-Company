@@ -10,4 +10,14 @@ public class RegularEmployee extends Employee {
 
     public double getLeaveCredits() { return leaveCredits; }
     public void setLeaveCredits(double leaveCredits) { this.leaveCredits = leaveCredits; }
+
+    @Override
+    public double getRate() {
+        return getBasicSalary();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(" | Leave: %.1f", leaveCredits);
+    }
 }
