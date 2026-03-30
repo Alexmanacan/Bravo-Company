@@ -1,4 +1,4 @@
-# Group  — Java Payroll System
+# Group ? — Java Payroll System
 
 > **CCOBJPGL | Object-Oriented Programming | Week 3 Lab**
 > NU Dasmariñas
@@ -7,7 +7,7 @@
 
 ## Project Overview
 
-A console-based Java Payroll System that computes and displays employee salaries based on employee type. The program demonstrates OOP principles including encapsulation, class hierarchy, constructors, and getters/setters.
+A TUI Java Payroll System that computes and displays employee salaries based on employee type. The program demonstrates OOP principles including encapsulation, class hierarchy, constructors, and getters/setters.
 
 ***
 
@@ -15,16 +15,16 @@ A console-based Java Payroll System that computes and displays employee salaries
 
 | Name | Role | GitHub Username |
 |------|------|----------------|
-| <!-- Name --> | Project Manager | <!-- @username --> |
-| <!-- Name --> | Lead Developer | <!-- @username --> |
+| Paquito | Project Manager | @Alexmanacan |
+| Chris | Lead Developer | Unawakened |
 | <!-- Name --> | Developer | <!-- @username --> |
 
 ***
 
 ## Repository & Project Management
 
-- **GitHub Repository:** <!-- https://github.com/org/repo -->
-- **Jira Board:** <!-- https://yourteam.atlassian.net/jira/... -->
+- **GitHub Repository:** https://github.com/Alexmanacan/Bravo-Company
+- **Jira Board:** https://minoquiiiii.atlassian.net/jira/software/projects/SCRUM/boards/1
 - **Branch Strategy:** `main` → `dev` → `feature/*`
 
 ***
@@ -173,15 +173,26 @@ Net Pay = Gross Pay − Total Deductions
 
 | Day | Focus | Assignee |
 |-----|-------|----------|
-| Day 1 | Repo setup, Jira board, task assignments | <!-- PM --> |
-| Day 2 | `Employee` base class + 4 subclasses | <!-- Dev --> |
-| Day 3 | Payroll computation (gross pay + deductions) | <!-- Dev --> |
-| Day 4 | TUI menu system + `PayslipRenderer` | <!-- Dev --> |
-| Day 5 | Integration, testing, PR review, demo | <!-- All --> |
+| Day 1 | Repo setup, Jira board, task assignments | Project Manager |
+| Day 2 | `Employee` base class + 4 subclasses | Dev |
+| Day 3 | Payroll computation (gross pay + deductions) | Dev |
+| Day 4 | TUI menu system + `PayslipRenderer` | Dev |
+| Day 5 | Integration, testing, PR review, demo | All |
 
 ***
 
 ## How to Run
+
+## Prerequesites
+- Java JDK 17 or higher
+- Terminal / Command Prompt
+
+### Clone the Repository
+
+```bash
+git clone [link to repo]
+cd [repo name]
+```
 
 ```bash
 # Compile
