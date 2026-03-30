@@ -22,6 +22,26 @@ public class PayrollSystem {
         employees.add(new PartTimeEmployee("2024-005", "Sam", 250));
     }
 
+    private int termW = 120;
+    private int termH = 30;
+
+    private void updateTerminalSize() {
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // Default for Windows as 'mode con' is unreliable to parse quickly
+            termW = 120;
+            termH = 30;
+            return;
+        }
+        try {
+            String[] cmdW = {"sh", "-c", "tput cols < /dev/tty"};
+            String[] cmdH = {"sh", "-c", "tput lines < /dev/tty"};
+            termW = Integer.parseInt(new java.util.Scanner(Runtime.getRuntime().exec(cmdW).getInputStream()).next());
+            termH = Integer.parseInt(new java.util.Scanner(Runtime.getRuntime().exec(cmdH).getInputStream()).next());
+        } catch (Exception e) {
+            termW = 120; termH = 30;
+        }
+    }
+
     public void run() {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         try {
@@ -29,9 +49,10 @@ public class PayrollSystem {
             
             java.util.Scanner scanner = new java.util.Scanner(System.in);
             while (running) {
+                updateTerminalSize();
                 render();
                 if (isWindows) {
-                    TUITheme.moveTo(1, 30);
+                    TUITheme.moveTo(1, termH);
                     System.out.print(TUITheme.FG_ACCENT + " (Win) Command: " + TUITheme.RESET);
                     String input = scanner.nextLine().toLowerCase();
                     if (!input.isEmpty()) handleWindowsInput(input);
@@ -65,35 +86,41 @@ public class PayrollSystem {
         System.out.print(TUITheme.CLEAR + TUITheme.BG_BASE);
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
-        // ... (rest of render method logic)
-        int termW = 120, termH = 30;
-        int leftW = 38, rightW = termW - leftW;
-        int topH = 16, botH = termH - topH - 1;
+        // Dynamic Grid dimensions
+        int leftW = (int)(termW * 0.35); // 35% of width for sidebar
+        int rightW = termW - leftW;
+        int topH = (int)(termH * 0.55);  // 55% of height for top panels
+        int botH = termH - topH - 1;     // 1 row for status bar
 
+        // Draw panels
         TUITheme.drawPanel(1,        1,       leftW,  topH,  "Employees",     focusedPanel == 0);
         TUITheme.drawPanel(1,        topH,   leftW,  botH,  "Summary",       focusedPanel == 1);
         TUITheme.drawPanel(leftW,   1,       rightW, topH,  "Timekeeping",   focusedPanel == 2);
         TUITheme.drawPanel(leftW,   topH,   rightW, botH,  "Payslip",       focusedPanel == 3);
 
+        // Draw Employees list
         if (employees.isEmpty()) {
             TUITheme.moveTo(3, 3);
             System.out.print(TUITheme.FG_MUTED + "No employees found." + TUITheme.RESET);
         } else {
-            for (int i = 0; i < employees.size(); i++) {
+            int visibleCount = topH - 3;
+            for (int i = 0; i < Math.min(employees.size(), visibleCount); i++) {
                 TUITheme.printRow(1, 2 + i, leftW, employees.get(i).toString(), 
                                  focusedPanel == 0 && i == selectedEmployeeIndex);
             }
         }
 
+        // Draw Summary (Placeholder)
         if (focusedPanel == 0 && !employees.isEmpty()) {
             Employee e = employees.get(selectedEmployeeIndex);
-            TUITheme.moveTo(3, topH + 1);
+            int startY = topH + 1;
+            TUITheme.moveTo(3, startY);
             System.out.print(TUITheme.FG_TEXT + "ID:   " + TUITheme.FG_ACCENT + e.getId() + TUITheme.RESET);
-            TUITheme.moveTo(3, topH + 2);
+            TUITheme.moveTo(3, startY + 1);
             System.out.print(TUITheme.FG_TEXT + "Name: " + TUITheme.FG_ACCENT + e.getName() + TUITheme.RESET);
-            TUITheme.moveTo(3, topH + 3);
+            TUITheme.moveTo(3, startY + 2);
             System.out.print(TUITheme.FG_TEXT + "Type: " + TUITheme.FG_ACCENT + e.getType() + TUITheme.RESET);
-            TUITheme.moveTo(3, topH + 4);
+            TUITheme.moveTo(3, startY + 3);
             if (e instanceof PartTimeEmployee pte) {
                 System.out.print(TUITheme.FG_TEXT + "Rate: " + TUITheme.FG_ACCENT + pte.getHourlyRate() + "/hr" + TUITheme.RESET);
             } else {
