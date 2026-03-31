@@ -14,3 +14,5 @@
 
 ## Regular Employee
 - `leaveCredits` (double): Accrued leave days (Default: 15.0).
+
+gemini --resume e7e42255-d084-4968-8cc9-5f4c04e82508
