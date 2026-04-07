@@ -106,12 +106,12 @@ public class PayrollSystem {
             int visibleCount = topH - 3;
             for (int i = 0; i < Math.min(employees.size(), visibleCount); i++) {
                 TUITheme.printRow(1, 2 + i, leftW, employees.get(i).toString(), 
-                                 focusedPanel == 0 && i == selectedEmployeeIndex);
+                                 i == selectedEmployeeIndex);
             }
         }
 
         // Draw Summary (Placeholder)
-        if (focusedPanel == 0 && !employees.isEmpty()) {
+        if (!employees.isEmpty()) {
             Employee e = employees.get(selectedEmployeeIndex);
             int startY = topH + 1;
             TUITheme.moveTo(3, startY);
