@@ -5,6 +5,7 @@ import classes.Employee;
 import classes.RegularEmployee;
 import java.util.ArrayList;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class PayrollSystem {
     private ArrayList<Employee> employees;
@@ -34,87 +35,19 @@ public class PayrollSystem {
         }
     }
 
-    private void addNewEmployee() {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
-        if (!isWindows) {
-            try { setRawMode(false); } catch (Exception e) {}
-        }
-        
-        java.util.Scanner scanner = new java.util.Scanner(System.in);
-        System.out.print(TUITheme.CLEAR);
-        TUITheme.moveTo(1, 1);
-        System.out.println(TUITheme.BOLD + TUITheme.FG_ACCENT + "--- Add New Employee ---" + TUITheme.RESET);
-        
-        System.out.print("ID: ");
-        String id = scanner.nextLine();
-        System.out.print("Name: ");
-        String name = scanner.nextLine();
-        
-        System.out.println("\nType:");
-        System.out.println("1. Regular");
-        System.out.println("2. Probationary");
-        System.out.println("3. Contractual");
-        System.out.println("4. Part-Time");
-        System.out.print("Selection: ");
-        String typeChoice = scanner.nextLine();
-        
-        Employee newEmp = null;
-        try {
-            switch (typeChoice) {
-                case "1":
-                    System.out.print("Monthly Rate: ");
-                    double regRate = Double.parseDouble(scanner.nextLine());
-                    newEmp = new RegularEmployee(id, name, regRate);
-                    break;
-                case "2":
-                    System.out.print("Monthly Rate: ");
-                    double probRate = Double.parseDouble(scanner.nextLine());
-                    newEmp = new ProbationaryEmployee(id, name, probRate);
-                    break;
-                case "3":
-                    System.out.print("Monthly Rate: ");
-                    double contRate = Double.parseDouble(scanner.nextLine());
-                    newEmp = new ContractualEmployee(id, name, contRate);
-                    break;
-                case "4":
-                    System.out.print("Hourly Rate: ");
-                    double hourlyRate = Double.parseDouble(scanner.nextLine());
-                    newEmp = new PartTimeEmployee(id, name, hourlyRate);
-                    break;
-                default:
-                    System.out.println("Invalid selection.");
-            }
-        } catch (Exception e) {
-            System.out.println("Invalid input. Aborting.");
-        }
-        
-        if (newEmp != null) {
-            employees.add(newEmp);
-            System.out.println("\nEmployee added successfully! Press Enter to return.");
-            scanner.nextLine();
-        } else {
-            System.out.println("\nFailed to add employee. Press Enter to return.");
-            scanner.nextLine();
-        }
-
-        if (!isWindows) {
-            try { setRawMode(true); } catch (Exception e) {}
-        }
-    }
-
     public void run() {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         try {
             if (!isWindows) setRawMode(true);
             
-            java.util.Scanner scanner = new java.util.Scanner(System.in);
             while (running) {
                 updateTerminalSize();
                 render();
                 if (isWindows) {
                     TUITheme.moveTo(1, termH);
                     System.out.print(TUITheme.FG_ACCENT + " (Win) Command: " + TUITheme.RESET);
-                    String input = scanner.nextLine().toLowerCase();
+                    Scanner winScanner = new Scanner(System.in);
+                    String input = winScanner.nextLine().toLowerCase();
                     if (!input.isEmpty()) handleWindowsInput(input);
                 } else {
                     handleInput();
@@ -143,8 +76,40 @@ public class PayrollSystem {
         }
     }
 
+    private void addNewEmployee() {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        try {
+            if (!isWindows) setRawMode(false);
+            System.out.print(TUITheme.CLEAR);
+            Scanner scanner = new Scanner(System.in);
+            
+            TUITheme.prompt("Enter ID: ");
+            String id = scanner.nextLine();
+            TUITheme.prompt("Enter Name: ");
+            String name = scanner.nextLine();
+            TUITheme.prompt("Type (1:Regular, 2:Probationary, 3:Part-Time, 4:Contractual): ");
+            int type = Integer.parseInt(scanner.nextLine());
+            TUITheme.prompt("Enter Salary/Rate: ");
+            double rate = Double.parseDouble(scanner.nextLine());
+
+            switch (type) {
+                case 1 -> employees.add(new RegularEmployee(id, name, rate));
+                case 2 -> employees.add(new ProbationaryEmployee(id, name, rate));
+                case 3 -> employees.add(new PartTimeEmployee(id, name, rate));
+                case 4 -> employees.add(new ContractualEmployee(id, name, rate));
+                default -> System.out.println("Invalid type.");
+            }
+            
+            if (!isWindows) setRawMode(true);
+        } catch (Exception e) {
+            System.out.println("Error adding employee: " + e.getMessage());
+            try { Thread.sleep(2000); } catch (InterruptedException ex) {}
+            try { if (!isWindows) setRawMode(true); } catch (Exception ex) {}
+        }
+    }
+
     private void render() {
-        System.out.print(TUITheme.CLEAR + TUITheme.BG_BASE);
+        System.out.print(TUITheme.HIDE_CURSOR + TUITheme.MOVE_HOME + TUITheme.BG_BASE);
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
         // Dynamic Grid dimensions
@@ -169,7 +134,7 @@ public class PayrollSystem {
             }
         }
 
-        if (focusedPanel == 0 && !employees.isEmpty()) {
+        if (!employees.isEmpty()) {
             Employee e = employees.get(selectedEmployeeIndex);
             int startY = topH + 1;
             TUITheme.moveTo(3, startY);
@@ -192,6 +157,7 @@ public class PayrollSystem {
 
         TUITheme.drawStatusBar(termH, termW, bindings);
         TUITheme.moveTo(1, termH);
+        System.out.print(TUITheme.SHOW_CURSOR);
         System.out.flush();
     }
 
@@ -200,15 +166,12 @@ public class PayrollSystem {
         
         if (ch == 27) { // ESC
             int next1 = System.in.read();
-            if (next1 == 91) { // [
+            if (next1 == 91) {
                 int next2 = System.in.read();
-                if (next2 == 65) { // Up
-                    moveSelection(-1);
-                } else if (next2 == 66) { // Down
-                    moveSelection(1);
-                }
+                if (next2 == 65) moveSelection(-1);
+                else if (next2 == 66) moveSelection(1);
             }
-        } else if (ch == 9) { // Tab
+        } else if (ch == 9) {
             focusedPanel = (focusedPanel + 1) % 4;
         } else if (ch == 'n' || ch == 'N') {
             addNewEmployee();
@@ -228,10 +191,7 @@ public class PayrollSystem {
     }
 
     private void setRawMode(boolean raw) throws IOException, InterruptedException {
-        String[] cmd = {
-            "sh", "-c", 
-            raw ? "stty raw -echo < /dev/tty" : "stty cooked echo < /dev/tty"
-        };
+        String[] cmd = { "sh", "-c", raw ? "stty raw -echo < /dev/tty" : "stty cooked echo < /dev/tty" };
         Runtime.getRuntime().exec(cmd).waitFor();
     }
 }
