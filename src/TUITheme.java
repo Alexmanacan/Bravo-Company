@@ -5,6 +5,9 @@ public class TUITheme {
     public static final String DIM     = "\033[2m";
     public static final String REVERSE = "\033[7m";
     public static final String CLEAR   = "\033[2J\033[H";
+    public static final String MOVE_HOME = "\033[H";
+    public static final String HIDE_CURSOR = "\033[?25l";
+    public static final String SHOW_CURSOR = "\033[?25h";
 
     // Claude Code CLI foreground colors
     public static final String FG_TEXT    = "\033[38;2;204;202;200m";
@@ -38,12 +41,12 @@ public class TUITheme {
         int remaining = w - title.length() - 4;
         System.out.print(H.repeat(Math.max(0, remaining)) + TR + RESET);
 
-        // Side borders
+        // Side borders and clear content
         for (int row = 1; row < h - 1; row++) {
             moveTo(x, y + row);
-            System.out.print(borderColor + V + RESET);
-            moveTo(x + w - 1, y + row);
-            System.out.print(borderColor + V + RESET);
+            System.out.print(borderColor + V + RESET 
+                           + " ".repeat(w - 2)
+                           + borderColor + V + RESET);
         }
 
         // Bottom border

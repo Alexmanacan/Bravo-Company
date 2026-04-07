@@ -5,6 +5,7 @@ import classes.Employee;
 import classes.RegularEmployee;
 import java.util.ArrayList;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class PayrollSystem {
     private ArrayList<Employee> employees;
@@ -14,12 +15,6 @@ public class PayrollSystem {
 
     public PayrollSystem() {
         employees = new ArrayList<>();
-        // Seed some sample data
-        employees.add(new RegularEmployee("2024-001", "Paquito", 35000));
-        employees.add(new RegularEmployee("2024-002", "Chris", 42000));
-        employees.add(new ProbationaryEmployee("2024-003", "Alex", 25000));
-        employees.add(new ContractualEmployee("2024-004", "Jordan", 30000));
-        employees.add(new PartTimeEmployee("2024-005", "Sam", 250));
     }
 
     private int termW = 120;
@@ -27,7 +22,6 @@ public class PayrollSystem {
 
     private void updateTerminalSize() {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            // Default for Windows as 'mode con' is unreliable to parse quickly
             termW = 120;
             termH = 30;
             return;
@@ -47,14 +41,14 @@ public class PayrollSystem {
         try {
             if (!isWindows) setRawMode(true);
             
-            java.util.Scanner scanner = new java.util.Scanner(System.in);
             while (running) {
                 updateTerminalSize();
                 render();
                 if (isWindows) {
                     TUITheme.moveTo(1, termH);
                     System.out.print(TUITheme.FG_ACCENT + " (Win) Command: " + TUITheme.RESET);
-                    String input = scanner.nextLine().toLowerCase();
+                    Scanner winScanner = new Scanner(System.in);
+                    String input = winScanner.nextLine().toLowerCase();
                     if (!input.isEmpty()) handleWindowsInput(input);
                 } else {
                     handleInput();
@@ -77,28 +71,58 @@ public class PayrollSystem {
                 case 'w': moveSelection(-1); break;
                 case 's': moveSelection(1);  break;
                 case 't': focusedPanel = (focusedPanel + 1) % 4; break;
+                case 'n': addNewEmployee(); break;
                 case 'q': running = false; return;
             }
         }
     }
 
+    private void addNewEmployee() {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        try {
+            if (!isWindows) setRawMode(false);
+            System.out.print(TUITheme.CLEAR);
+            Scanner scanner = new Scanner(System.in);
+            
+            TUITheme.prompt("Enter ID: ");
+            String id = scanner.nextLine();
+            TUITheme.prompt("Enter Name: ");
+            String name = scanner.nextLine();
+            TUITheme.prompt("Type (1:Regular, 2:Probationary, 3:Part-Time, 4:Contractual): ");
+            int type = Integer.parseInt(scanner.nextLine());
+            TUITheme.prompt("Enter Salary/Rate: ");
+            double rate = Double.parseDouble(scanner.nextLine());
+
+            switch (type) {
+                case 1 -> employees.add(new RegularEmployee(id, name, rate));
+                case 2 -> employees.add(new ProbationaryEmployee(id, name, rate));
+                case 3 -> employees.add(new PartTimeEmployee(id, name, rate));
+                case 4 -> employees.add(new ContractualEmployee(id, name, rate));
+                default -> System.out.println("Invalid type.");
+            }
+            
+            if (!isWindows) setRawMode(true);
+        } catch (Exception e) {
+            System.out.println("Error adding employee: " + e.getMessage());
+            try { Thread.sleep(2000); } catch (InterruptedException ex) {}
+            try { if (!isWindows) setRawMode(true); } catch (Exception ex) {}
+        }
+    }
+
     private void render() {
-        System.out.print(TUITheme.CLEAR + TUITheme.BG_BASE);
+        System.out.print(TUITheme.HIDE_CURSOR + TUITheme.MOVE_HOME + TUITheme.BG_BASE);
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
-        // Dynamic Grid dimensions
-        int leftW = (int)(termW * 0.35); // 35% of width for sidebar
+        int leftW = (int)(termW * 0.35);
         int rightW = termW - leftW;
-        int topH = (int)(termH * 0.55);  // 55% of height for top panels
-        int botH = termH - topH - 1;     // 1 row for status bar
+        int topH = (int)(termH * 0.55);
+        int botH = termH - topH - 1;
 
-        // Draw panels
         TUITheme.drawPanel(1,        1,       leftW,  topH,  "Employees",     focusedPanel == 0);
         TUITheme.drawPanel(1,        topH,   leftW,  botH,  "Summary",       focusedPanel == 1);
         TUITheme.drawPanel(leftW,   1,       rightW, topH,  "Timekeeping",   focusedPanel == 2);
         TUITheme.drawPanel(leftW,   topH,   rightW, botH,  "Payslip",       focusedPanel == 3);
 
-        // Draw Employees list
         if (employees.isEmpty()) {
             TUITheme.moveTo(3, 3);
             System.out.print(TUITheme.FG_MUTED + "No employees found." + TUITheme.RESET);
@@ -106,11 +130,10 @@ public class PayrollSystem {
             int visibleCount = topH - 3;
             for (int i = 0; i < Math.min(employees.size(), visibleCount); i++) {
                 TUITheme.printRow(1, 2 + i, leftW, employees.get(i).toString(), 
-                                 i == selectedEmployeeIndex);
+                                 focusedPanel == 0 && i == selectedEmployeeIndex);
             }
         }
 
-        // Draw Summary (Placeholder)
         if (!employees.isEmpty()) {
             Employee e = employees.get(selectedEmployeeIndex);
             int startY = topH + 1;
@@ -129,39 +152,34 @@ public class PayrollSystem {
         }
 
         String[] bindings = isWindows ? 
-            new String[]{"[w/s] move", "[t] panel", "[q] quit"} :
-            new String[]{"[↑↓] navigate", "[Tab] switch panel", "[q] quit"};
+            new String[]{"[w/s] move", "[t] panel", "[n] new", "[q] quit"} :
+            new String[]{"[↑↓] navigate", "[Tab] switch panel", "[n] new", "[q] quit"};
 
         TUITheme.drawStatusBar(termH, termW, bindings);
         TUITheme.moveTo(1, termH);
+        System.out.print(TUITheme.SHOW_CURSOR);
         System.out.flush();
     }
 
     private void handleInput() throws IOException {
         int ch = System.in.read();
         
-        // Handle escape sequences (Arrows)
-        if (ch == 27) { // ESC
+        if (ch == 27) {
             int next1 = System.in.read();
-            if (next1 == 91) { // [
+            if (next1 == 91) {
                 int next2 = System.in.read();
-                if (next2 == 65) { // Up
-                    moveSelection(-1);
-                } else if (next2 == 66) { // Down
-                    moveSelection(1);
-                }
+                if (next2 == 65) moveSelection(-1);
+                else if (next2 == 66) moveSelection(1);
             }
-        } else if (ch == 9) { // Tab
+        } else if (ch == 9) {
             focusedPanel = (focusedPanel + 1) % 4;
-        } else if (ch == 13 || ch == 10) { // Enter
-            // Placeholder for selection logic
         } else if (ch == 'n' || ch == 'N') {
-            // Placeholder for new employee logic
+            addNewEmployee();
         } else if (ch == 'q' || ch == 'Q') {
             running = false;
-        } else if (ch == 'j' || ch == 'J') { // Vim-style down
+        } else if (ch == 'j' || ch == 'J') {
             moveSelection(1);
-        } else if (ch == 'k' || ch == 'K') { // Vim-style up
+        } else if (ch == 'k' || ch == 'K') {
             moveSelection(-1);
         }
     }
@@ -173,10 +191,7 @@ public class PayrollSystem {
     }
 
     private void setRawMode(boolean raw) throws IOException, InterruptedException {
-        String[] cmd = {
-            "sh", "-c", 
-            raw ? "stty raw -echo < /dev/tty" : "stty cooked echo < /dev/tty"
-        };
+        String[] cmd = { "sh", "-c", raw ? "stty raw -echo < /dev/tty" : "stty cooked echo < /dev/tty" };
         Runtime.getRuntime().exec(cmd).waitFor();
     }
 }
