@@ -3,6 +3,7 @@ import classes.ProbationaryEmployee;
 import classes.PartTimeEmployee;
 import classes.Employee;
 import classes.RegularEmployee;
+import timekeeping.DailyRecord;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Scanner;
@@ -71,6 +72,7 @@ public class PayrollSystem {
                 case 's': moveSelection(1);  break;
                 case 't': focusedPanel = (focusedPanel + 1) % 4; break;
                 case 'n': addNewEmployee(); break;
+                case 'a': if (focusedPanel == 2) addTimekeepingRecord(); break;
                 case 'q': running = false; return;
             }
         }
@@ -103,6 +105,34 @@ public class PayrollSystem {
             if (!isWindows) setRawMode(true);
         } catch (Exception e) {
             System.out.println("Error adding employee: " + e.getMessage());
+            try { Thread.sleep(2000); } catch (InterruptedException ex) {}
+            try { if (!isWindows) setRawMode(true); } catch (Exception ex) {}
+        }
+    }
+
+    private void addTimekeepingRecord() {
+        if (employees.isEmpty()) return;
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        try {
+            if (!isWindows) setRawMode(false);
+            System.out.print(TUITheme.CLEAR);
+            Scanner scanner = new Scanner(System.in);
+            
+            Employee e = employees.get(selectedEmployeeIndex);
+            System.out.println(TUITheme.FG_ACCENT + "Adding Time Record for: " + e.getName() + TUITheme.RESET);
+            
+            TUITheme.prompt("Day (1-31): ");
+            int day = Integer.parseInt(scanner.nextLine());
+            TUITheme.prompt("Time In (e.g. 8.0): ");
+            double in = Double.parseDouble(scanner.nextLine());
+            TUITheme.prompt("Time Out (e.g. 17.0): ");
+            double out = Double.parseDouble(scanner.nextLine());
+
+            e.addTimeRecord(new DailyRecord(day, in, out));
+            
+            if (!isWindows) setRawMode(true);
+        } catch (Exception e) {
+            System.out.println("Error adding record: " + e.getMessage());
             try { Thread.sleep(2000); } catch (InterruptedException ex) {}
             try { if (!isWindows) setRawMode(true); } catch (Exception ex) {}
         }
@@ -149,11 +179,31 @@ public class PayrollSystem {
             } else {
                 System.out.print(TUITheme.FG_TEXT + "Basic: " + TUITheme.FG_ACCENT + e.getBasicSalary() + TUITheme.RESET);
             }
+
+            // Timekeeping Panel Content
+            int startXtk = leftW + 2;
+            int startYtk = 2;
+            TUITheme.moveTo(startXtk, startYtk);
+            System.out.printf(TUITheme.FG_MUTED + "%-4s %-6s %-6s %-6s %-6s %-6s %-6s" + TUITheme.RESET, 
+                              "Day", "In", "Out", "Work", "Late", "UT", "OT");
+            
+            ArrayList<DailyRecord> records = e.getTimeRecords();
+            int maxVisible = topH - 4;
+            for (int i = 0; i < Math.min(records.size(), maxVisible); i++) {
+                DailyRecord r = records.get(i);
+                TUITheme.moveTo(startXtk, startYtk + 1 + i);
+                System.out.printf(TUITheme.FG_TEXT + "%-4d %-6.1f %-6.1f %-6.1f %-6.1f %-6.1f %-6.1f" + TUITheme.RESET,
+                                  r.day, r.timeIn, r.timeOut, r.getWorkedHours(), r.getLate(), r.getUndertime(), r.getOvertime());
+            }
+            if (records.isEmpty()) {
+                TUITheme.moveTo(startXtk, startYtk + 2);
+                System.out.print(TUITheme.FG_MUTED + "No records. Press 'a' to add." + TUITheme.RESET);
+            }
         }
 
         String[] bindings = isWindows ? 
-            new String[]{"[w/s] move", "[t] panel", "[n] add", "[q] quit"} :
-            new String[]{"[↑↓] navigate", "[Tab] switch panel", "[n] add", "[q] quit"};
+            new String[]{"[w/s] move", "[t] panel", "[n] add", "[a] add record", "[q] quit"} :
+            new String[]{"[↑↓] navigate", "[Tab] switch panel", "[n] add", "[a] add record", "[q] quit"};
 
         TUITheme.drawStatusBar(termH, termW, bindings);
         TUITheme.moveTo(1, termH);
@@ -175,6 +225,8 @@ public class PayrollSystem {
             focusedPanel = (focusedPanel + 1) % 4;
         } else if (ch == 'n' || ch == 'N') {
             addNewEmployee();
+        } else if (ch == 'a' || ch == 'A') {
+            if (focusedPanel == 2) addTimekeepingRecord();
         } else if (ch == 'q' || ch == 'Q') {
             running = false;
         } else if (ch == 'j' || ch == 'J') { 

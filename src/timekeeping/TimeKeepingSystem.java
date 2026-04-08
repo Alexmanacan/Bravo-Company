@@ -1,64 +1,7 @@
+package timekeeping;
+
 import java.util.ArrayList;
 import java.util.Scanner;
-
-// OBJECT CLASS
-class DailyRecord {
-
-    int day;
-    double timeIn;
-    double timeOut;
-
-    DailyRecord(int day, double timeIn, double timeOut) {
-        this.day = day;
-        this.timeIn = timeIn;
-        this.timeOut = timeOut;
-    }
-
-    // WORKED HOURS
-    double getWorkedHours() {
-
-        if (timeIn == 0 && timeOut == 0)
-            return 0;
-
-        return timeOut - timeIn;
-    }
-
-    // OVERTIME (after 5PM)
-    double getOvertime() {
-
-        if (timeOut > 17)
-            return timeOut - 17;
-
-        return 0;
-    }
-
-    // UNDERTIME (before 5PM)
-    double getUndertime() {
-
-        if (timeOut == 0)
-            return 8; // Absent whole day
-
-        if (timeOut < 17)
-            return 17 - timeOut;
-
-        return 0;
-    }
-
-    // LATE (after 8AM)
-    double getLate() {
-
-        if (timeIn > 8)
-            return timeIn - 8;
-
-        return 0;
-    }
-
-    // ABSENT CHECK
-    boolean isAbsent() {
-
-        return (timeIn == 0 && timeOut == 0);
-    }
-}
 
 public class TimeKeepingSystem {
 
