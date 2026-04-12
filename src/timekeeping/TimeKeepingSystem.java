@@ -53,8 +53,8 @@ public class TimeKeepingSystem {
             records.add(
                     new DailyRecord(
                             day,
-                            timeIn,
-                            timeOut
+                            (int)timeIn,
+                            (int)timeOut
                     )
             );
         }
