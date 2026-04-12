@@ -1,5 +1,8 @@
 package classes;
 
+import java.util.ArrayList;
+import timekeeping.DailyRecord;
+
 public abstract class Employee {
     private String id;
     private String name;
@@ -7,6 +10,7 @@ public abstract class Employee {
     private String position;
     private String department;
     private double basicSalary;
+    private ArrayList<DailyRecord> timeRecords;
 
     public Employee(String id, String name, String type, double basicSalary) {
         this(id, name, type, "Staff", "General", basicSalary);
@@ -19,6 +23,7 @@ public abstract class Employee {
         this.position = position;
         this.department = department;
         this.basicSalary = basicSalary;
+        this.timeRecords = new ArrayList<>();
     }
 
     public String getId() { return id; }
@@ -38,6 +43,9 @@ public abstract class Employee {
 
     public double getBasicSalary() { return basicSalary; }
     public void setBasicSalary(double basicSalary) { this.basicSalary = basicSalary; }
+
+    public ArrayList<DailyRecord> getTimeRecords() { return timeRecords; }
+    public void addTimeRecord(DailyRecord record) { timeRecords.add(record); }
 
     public abstract double getRate();
 

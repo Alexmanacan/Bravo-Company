@@ -1,8 +1,5 @@
 # Group ? — Java Payroll System
 
-> **CCOBJPGL | Object-Oriented Programming | Week 3 Lab**
-> NU Dasmariñas
-
 ***
 
 ## Project Overview
@@ -25,7 +22,6 @@ A TUI Java Payroll System that computes and displays employee salaries based on 
 
 - **GitHub Repository:** https://github.com/Alexmanacan/Bravo-Company
 - **Jira Board:** https://minoquiiiii.atlassian.net/jira/software/projects/SCRUM/boards/1
-- **Branch Strategy:** `main` → `dev` → `feature/*`
 
 ***
 
@@ -34,10 +30,9 @@ A TUI Java Payroll System that computes and displays employee salaries based on 
 | Layer | Technology |
 |-------|-----------|
 | Language | Java |
-| Interface | Console TUI (ANSI escape codes) |
-| Build | Javac / IDE of choice |
+| Interface | Console TUI (ANSI escape codes) with the help of Gemini Pro 3.1 |
+| Build | Javac / Neovim|
 | Version Control | Git + GitHub |
-| Project Management | Jira |
 
 ***
 
@@ -111,42 +106,28 @@ Net Pay = Gross Pay − Total Deductions
 
 ## OOP Structure Requirements
 
-- [ ] At least 3 user-defined classes
-- [ ] All attributes declared as `private`
-- [ ] Constructors implemented for all classes
-- [ ] Getters and setters used throughout
-- [ ] `Main.java` controls program flow only — no business logic
-- [ ] Objects or `ArrayList` used (no static variables only)
-
-***
-
-## Grading Rubric Summary
-
-| Category | Max Points |
-|----------|-----------|
-| OOP Design & Program Structure | 30 pts |
-| Payroll Computation Accuracy | 25 pts |
-| Employee Type Handling | 15 pts |
-| User Interaction & Output | 15 pts |
-| Code Quality & Documentation | 10 pts |
-| Input Validation & Stability | 5 pts |
-| **Total** | **100 pts** |
+- [x] At least 3 user-defined classes
+- [x] All attributes declared as `private`
+- [x] Constructors implemented for all classes
+- [x] Getters and setters used throughout
+- [x] `Main.java` controls program flow only — no business logic
+- [x] Objects or `ArrayList` used (no static variables only)
 
 ***
 
 ## Program Requirements Checklist
 
 ### Program Requirements
-- [ ] Console-based (no GUI)
-- [ ] No file I/O used
-- [ ] Menu-driven interface implemented
+- [x] Console-based (no GUI)
+- [x] No file I/O used
+- [x] Menu-driven interface implemented
 
 ### OOP Structure
-- [ ] At least 3 user-defined classes
-- [ ] Private attributes
-- [ ] Constructors implemented
-- [ ] Getters and setters used
-- [ ] Main class controls flow only
+- [x] At least 3 user-defined classes
+- [x] Private attributes
+- [x] Constructors implemented
+- [x] Getters and setters used
+- [x] Main class controls flow only
 
 ### Payroll Functionality
 - [ ] Regular employee logic correct
@@ -199,7 +180,7 @@ cd [repo name]
 javac -d out src/**/*.java
 
 # Run
-java -cp out Main
+java Main
 ```
 
 > **Note:** ANSI color codes require a terminal that supports them.
@@ -220,4 +201,4 @@ java -cp out Main
 
 ## License
 
-For academic use only — NU Dasmariñas | CCOBJPGL | <!-- Semester/AY -->
+For academic use only — NU Dasmariñas | CCOBJPGL | 3rd Term - 2026
